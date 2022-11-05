@@ -113,8 +113,12 @@ pub fn interface(interface: Interface) -> TokenStream {
                 ::wl::lease::Resident::new(id, Self::dispatch, Self::INTERFACE, Self::VERSION, self)
             }
             #[doc = "Create a new object that can be tracked by `wl`, with a given version"]
-            fn into_versioned_object(self, id: ::wl::Id, version: u32) -> ::wl::lease::Resident<Self, T, ::wl::server::Client<T>> {
-                ::wl::lease::Resident::new(id, Self::dispatch, Self::INTERFACE, version, self)
+            fn into_versioned_object(self, id: ::wl::Id, version: u32) -> ::core::result::Result<::wl::lease::Resident<Self, T, ::wl::server::Client<T>>, ::wl::wire::WlError<'static>> {
+                if version > Self::VERSION {
+                    ::core::result::Result::Err(::wl::wire::WlError::UNSUPPORTED_VERSION)
+                } else {
+                    ::core::result::Result::Ok(::wl::lease::Resident::new(id, Self::dispatch, Self::INTERFACE, version, self))
+                }
             }
             #(#requests)*
             #(#events)*
