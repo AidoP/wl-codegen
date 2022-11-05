@@ -1,7 +1,7 @@
-# wl-codegen
-Code generation for `wl` dispatch glue.
+# yutani-codegen
+Code generation for `yutani` dispatch glue.
 
-Wayland specifies protocols in XML (or TOML in the case of `wl`) with all of the necessary information to
+Wayland specifies protocols in XML (or TOML in the case of `yutani`) with all of the necessary information to
 automatically generate dispatch glue so that implementing a Wayland protocol can be as simple as defining 
 the required functions.
 

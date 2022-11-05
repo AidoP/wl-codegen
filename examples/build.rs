@@ -34,7 +34,7 @@ fn wl_codegen(protocol: &str) {
     println!("cargo:rerun-if-changed={spec}");
     println!("cargo:rerun-if-changed={proto}");
 
-    let code = match wl_codegen::protocol(spec) {
+    let code = match yutani_codegen::protocol(spec) {
         Ok(code) => code,
         Err(error) => panic!("Failed to read protocol specification '{spec}': {error:?}")
     };

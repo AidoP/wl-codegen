@@ -98,23 +98,23 @@ pub fn interface(interface: Interface) -> TokenStream {
             const INTERFACE: &'static ::core::primitive::str = #name;
             const VERSION: ::core::primitive::u32 = #version;
             #[doc(hidden)]
-            fn dispatch(_this: ::wl::lease::Lease<dyn ::core::any::Any>, _event_loop: &mut ::wl::wire::EventLoop<T>, _client: &mut ::wl::server::Client<T>, _message: ::wl::wire::Message) -> ::core::result::Result<(), ::wl::wire::WlError<'static>> {
-                let _this: ::wl::lease::Lease<Self> = _this.downcast().ok_or(::wl::wire::WlError::INTERNAL)?;
+            fn dispatch(_this: ::yutani::lease::Lease<dyn ::core::any::Any>, _event_loop: &mut ::yutani::wire::EventLoop<T>, _client: &mut ::yutani::server::Client<T>, _message: ::yutani::wire::Message) -> ::core::result::Result<(), ::yutani::wire::WlError<'static>> {
+                let _this: ::yutani::lease::Lease<Self> = _this.downcast().ok_or(::yutani::wire::WlError::INTERNAL)?;
                 match _message.opcode {
                     #(#dispatch_requests,)*
-                    _ => ::core::result::Result::Err(::wl::wire::WlError::INVALID_OPCODE)
+                    _ => ::core::result::Result::Err(::yutani::wire::WlError::INVALID_OPCODE)
                 }
             }
-            #[doc = "Create a new object that can be tracked by `wl`"]
-            fn into_object(self, id: ::wl::Id) -> ::wl::lease::Resident<Self, T, ::wl::server::Client<T>> {
-                ::wl::lease::Resident::new(id, Self::dispatch, Self::INTERFACE, Self::VERSION, self)
+            #[doc = "Create a new object that can be tracked by `yutani`"]
+            fn into_object(self, id: ::yutani::Id) -> ::yutani::lease::Resident<Self, T, ::yutani::server::Client<T>> {
+                ::yutani::lease::Resident::new(id, Self::dispatch, Self::INTERFACE, Self::VERSION, self)
             }
-            #[doc = "Create a new object that can be tracked by `wl`, with a given version"]
-            fn into_versioned_object(self, id: ::wl::Id, version: u32) -> ::core::result::Result<::wl::lease::Resident<Self, T, ::wl::server::Client<T>>, ::wl::wire::WlError<'static>> {
+            #[doc = "Create a new object that can be tracked by `yutani`, with a given version"]
+            fn into_versioned_object(self, id: ::yutani::Id, version: u32) -> ::core::result::Result<::yutani::lease::Resident<Self, T, ::yutani::server::Client<T>>, ::yutani::wire::WlError<'static>> {
                 if version > Self::VERSION {
-                    ::core::result::Result::Err(::wl::wire::WlError::UNSUPPORTED_VERSION)
+                    ::core::result::Result::Err(::yutani::wire::WlError::UNSUPPORTED_VERSION)
                 } else {
-                    ::core::result::Result::Ok(::wl::lease::Resident::new(id, Self::dispatch, Self::INTERFACE, version, self))
+                    ::core::result::Result::Ok(::yutani::lease::Resident::new(id, Self::dispatch, Self::INTERFACE, version, self))
                 }
             }
             #(#requests)*
@@ -241,7 +241,7 @@ pub fn request(request: &Request) -> TokenStream {
         #description
         #arg_summaries_header
         #(#arg_summaries)*
-        fn #ident(this: ::wl::lease::Lease<Self>, event_loop: &mut ::wl::wire::EventLoop<T>, client: &mut ::wl::server::Client<T> #(, #args)*) -> ::core::result::Result<(), ::wl::wire::WlError<'static>>;
+        fn #ident(this: ::yutani::lease::Lease<Self>, event_loop: &mut ::yutani::wire::EventLoop<T>, client: &mut ::yutani::server::Client<T> #(, #args)*) -> ::core::result::Result<(), ::yutani::wire::WlError<'static>>;
     }
 }
 
@@ -288,7 +288,7 @@ pub fn event(event: &Event, opcode: u16) -> TokenStream {
         #description
         #arg_summaries_header
         #(#arg_summaries)*
-        fn #ident(this: ::wl::lease::Lease<Self>, client: &mut ::wl::server::Client<T> #(, #args)*) -> ::core::result::Result<(), ::wl::wire::WlError<'static>> {
+        fn #ident(this: &mut ::yutani::lease::Lease<Self>, client: &mut ::yutani::server::Client<T> #(, #args)*) -> ::core::result::Result<(), ::yutani::wire::WlError<'static>> {
             let #stream = client.stream();
             let _key = #stream.start_message(this.id(), #opcode);
             #(#args_senders;)*

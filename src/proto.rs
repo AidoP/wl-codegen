@@ -112,17 +112,17 @@ impl Arg {
             DataType::String => if self.nullable {
                 quote!{#stream.string()?}
             } else {
-                quote!{#stream.string()?.ok_or(::wl::wire::WlError::NON_NULLABLE)?}
+                quote!{#stream.string()?.ok_or(::yutani::wire::WlError::NON_NULLABLE)?}
             },
             DataType::Array => quote!{#stream.bytes()?},
             DataType::Fd => quote!{#stream.file()?},
             DataType::Object => if self.nullable {
                 quote!{#stream.object()?}
             } else {
-                quote!{#stream.object()?.ok_or(::wl::wire::WlError::NON_NULLABLE)?}
+                quote!{#stream.object()?.ok_or(::yutani::wire::WlError::NON_NULLABLE)?}
             },
             DataType::NewId => if let Some(_) = self.interface.as_ref() {
-                quote!{#stream.object()?.ok_or(::wl::wire::WlError::NON_NULLABLE)?}
+                quote!{#stream.object()?.ok_or(::yutani::wire::WlError::NON_NULLABLE)?}
             } else {
                 quote!{#stream.new_id()?}
             }
@@ -157,23 +157,23 @@ impl Arg {
         match self.ty {
             DataType::Int => quote!{::core::primitive::i32},
             DataType::Uint => quote!{::core::primitive::u32},
-            DataType::Fixed => quote!{::wl::Fixed},
+            DataType::Fixed => quote!{::yutani::Fixed},
             DataType::String => if self.nullable {
                 quote!{::core::option::Option<::std::string::String>}
             } else {
                 quote!{::std::string::String}
             },
             DataType::Array => quote!{::std::vec::Vec<u8>},
-            DataType::Fd => quote!{::wl::File},
+            DataType::Fd => quote!{::yutani::File},
             DataType::Object => if self.nullable {
-                quote!{::core::option::Option<::wl::Id>}
+                quote!{::core::option::Option<::yutani::Id>}
             } else {
-                quote!{::wl::Id}
+                quote!{::yutani::Id}
             },
             DataType::NewId => if let Some(_) = self.interface.as_ref() {
-                quote!{::wl::Id}
+                quote!{::yutani::Id}
             } else {
-                quote!{::wl::NewId}
+                quote!{::yutani::NewId}
             }
         }
     }
@@ -181,23 +181,23 @@ impl Arg {
         match self.ty {
             DataType::Int => quote!{::core::primitive::i32},
             DataType::Uint => quote!{::core::primitive::u32},
-            DataType::Fixed => quote!{::wl::Fixed},
+            DataType::Fixed => quote!{::yutani::Fixed},
             DataType::String => if self.nullable {
                 quote!{::core::option::Option<&'_ ::core::primitive::str>}
             } else {
                 quote!{&'_ ::core::primitive::str}
             },
             DataType::Array => quote!{&'_ [::core::primitive::u8]},
-            DataType::Fd => quote!{::wl::Fd<'static>},
+            DataType::Fd => quote!{::yutani::Fd<'static>},
             DataType::Object => if self.nullable {
-                quote!{::core::option::Option<::wl::Id>}
+                quote!{::core::option::Option<::yutani::Id>}
             } else {
-                quote!{::wl::Id}
+                quote!{::yutani::Id}
             },
             DataType::NewId => if let Some(_) = self.interface.as_ref() {
-                quote!{::wl::Id}
+                quote!{::yutani::Id}
             } else {
-                quote!{&'_ ::wl::NewId}
+                quote!{&'_ ::yutani::NewId}
             }
         }
     }
