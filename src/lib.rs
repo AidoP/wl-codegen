@@ -58,10 +58,7 @@ pub fn interface(interface: Interface) -> TokenStream {
     let name = interface.name;
     let version = interface.version;
     let version_doc = format!("`Version {}`", interface.version);
-    let summary = interface.summary.map(|summary| {
-        let summary = summary.to_title_case();
-        quote!{#[doc = #summary]}
-    });
+    let summary = interface.summary.map(|summary| quote!{#[doc = #summary]});
     let description = interface.description.map(|description| quote! {#[doc = #description]});
 
     let enums = interface.enums.into_iter().map(|e| enumeration(e));
@@ -138,10 +135,7 @@ pub fn enumeration(enumeration: Enum) -> TokenStream {
             #[doc = #since]
         }
     });
-    let summary = enumeration.summary.map(|summary| {
-        let summary = summary.to_title_case();
-        quote!{#[doc = #summary]}
-    });
+    let summary = enumeration.summary.map(|summary| quote!{#[doc = #summary]});
     let description = enumeration.description.map(|description| quote! {#[doc = #description]});
 
     let entries = enumeration.entries.iter().map(|entry| {
@@ -156,10 +150,7 @@ pub fn enumeration(enumeration: Enum) -> TokenStream {
                 #[doc = #since]
             }
         });
-        let summary = entry.summary.as_ref().map(|summary| {
-            let summary = summary.to_title_case();
-            quote!{#[doc = #summary]}
-        });
+        let summary = entry.summary.as_ref().map(|summary| quote!{#[doc = #summary]});
         let description = entry.description.as_ref().map(|description| quote! {#[doc = #description]});
         let value = entry.value;
         quote!{
@@ -218,10 +209,7 @@ pub fn request(request: &Request) -> TokenStream {
             #[doc = #since]
         }
     });
-    let summary = request.summary.as_ref().map(|summary| {
-        let summary = summary.to_title_case();
-        quote!{#[doc = #summary]}
-    });
+    let summary = request.summary.as_ref().map(|summary| quote!{#[doc = #summary]});
     let description = request.description.as_ref().map(|description| quote! {#[doc = #description]});
 
     let args = request.args.iter().map(|a| {
@@ -267,10 +255,7 @@ pub fn event(event: &Event, opcode: u16) -> TokenStream {
             #[doc = #since]
         }
     });
-    let summary = event.summary.as_ref().map(|summary| {
-        let summary = summary.to_title_case();
-        quote!{#[doc = #summary]}
-    });
+    let summary = event.summary.as_ref().map(|summary| quote!{#[doc = #summary]});
     let description = event.description.as_ref().map(|description| quote! {#[doc = #description]});
 
     let args = event.args.iter().map(|a| {
