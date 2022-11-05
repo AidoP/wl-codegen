@@ -1,7 +1,7 @@
 mod proto;
 use std::{path::Path, io, string::FromUtf8Error};
 
-use heck::{ToTitleCase, ToPascalCase, ToSnakeCase, ToShoutySnakeCase};
+use heck::{ToPascalCase, ToSnakeCase, ToShoutySnakeCase};
 use proc_macro2::{TokenStream, Ident, Span};
 pub use proto::*;
 use quote::quote;
@@ -31,7 +31,7 @@ impl From<FromUtf8Error> for Error {
 
 pub fn protocol<P: AsRef<Path>>(path: P) -> Result<TokenStream> {
     let protocol = proto::Protocol::load(path)?;
-    let header = format!("# {}", protocol.name.to_title_case());
+    let header = format!("# {}", protocol.name);
     let summary = protocol.summary.map(|summary| quote! {#![doc = #summary]});
     let description = protocol.description.map(|description| quote! {#![doc = #description]});
     let copyright = protocol.copyright.map(|copyright| quote! {
