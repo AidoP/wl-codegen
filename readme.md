@@ -1,5 +1,5 @@
 # yutani-codegen
-Code generation for `yutani` dispatch glue.
+Code generation for [yutani](https://github.com/AidoP/yutani).
 
 Wayland specifies protocols in XML (or TOML in the case of `yutani`) with all of the necessary information to
 automatically generate dispatch glue so that implementing a Wayland protocol can be as simple as defining 
@@ -38,18 +38,18 @@ fn main() {
         if let Err(error) = writeln!(proto_mod, "mod {protocol};\npub use {protocol}::*;") {
             panic!("Failed to write Rust source file '{mod_path}': {error:?}")
         }
-        wl_codegen(protocol)
+        yutani_codegen(protocol)
     }
 }
 
-fn wl_codegen(protocol: &str) {
+fn yutani_codegen(protocol: &str) {
     let spec = &format!("protocol/{}.toml", protocol.to_kebab_case());
     let proto = &format!("{PROTO_DIR}/{protocol}.rs");
 
     println!("cargo:rerun-if-changed={spec}");
     println!("cargo:rerun-if-changed={proto}");
 
-    let code = match wl_codegen::protocol(spec) {
+    let code = match yutani_codegen::protocol(spec) {
         Ok(code) => code,
         Err(error) => panic!("Failed to read protocol specification '{spec}': {error:?}")
     };
