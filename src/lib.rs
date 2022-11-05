@@ -92,9 +92,9 @@ pub fn interface(interface: Interface) -> TokenStream {
     });
 
     quote!{
-        #[doc = #version_doc]
-        #[doc = ""]
         #summary
+        #[doc = ""]
+        #[doc = #version_doc]
         #[doc = ""]
         #description
         pub trait #trait_ident<T>: 'static + ::core::marker::Sized {
@@ -134,8 +134,8 @@ pub fn enumeration(enumeration: Enum) -> TokenStream {
     let since = enumeration.since.map(|since| {
         let since = format!("`Since version {}`", since);
         quote!{
-            #[doc = #since]
             #[doc = ""]
+            #[doc = #since]
         }
     });
     let summary = enumeration.summary.map(|summary| {
@@ -152,8 +152,8 @@ pub fn enumeration(enumeration: Enum) -> TokenStream {
         let since = entry.since.map(|since| {
             let since = format!("`Since version {}`", since);
             quote!{
-                #[doc = #since]
                 #[doc = ""]
+                #[doc = #since]
             }
         });
         let summary = entry.summary.as_ref().map(|summary| {
@@ -163,8 +163,8 @@ pub fn enumeration(enumeration: Enum) -> TokenStream {
         let description = entry.description.as_ref().map(|description| quote! {#[doc = #description]});
         let value = entry.value;
         quote!{
-            #since
             #summary
+            #since
             #[doc = ""]
             #description
             pub const #ident: Self = Self(#value);
@@ -179,8 +179,8 @@ pub fn enumeration(enumeration: Enum) -> TokenStream {
     });
 
     quote!{
-        #since
         #summary
+        #since
         #[doc = ""]
         #description
         #[repr(transparent)]
@@ -214,8 +214,8 @@ pub fn request(request: &Request) -> TokenStream {
     let since = request.since.map(|since| {
         let since = format!("`Since version {}`", since);
         quote!{
-            #[doc = #since]
             #[doc = ""]
+            #[doc = #since]
         }
     });
     let summary = request.summary.as_ref().map(|summary| {
@@ -247,8 +247,8 @@ pub fn request(request: &Request) -> TokenStream {
     };
 
     quote!{
-        #since
         #summary
+        #since
         #[doc = ""]
         #description
         #arg_summaries_header
@@ -263,8 +263,8 @@ pub fn event(event: &Event, opcode: u16) -> TokenStream {
     let since = event.since.map(|since| {
         let since = format!("`Since version {}`", since);
         quote!{
-            #[doc = #since]
             #[doc = ""]
+            #[doc = #since]
         }
     });
     let summary = event.summary.as_ref().map(|summary| {
@@ -297,8 +297,8 @@ pub fn event(event: &Event, opcode: u16) -> TokenStream {
     };
 
     quote!{
-        #since
         #summary
+        #since
         #[doc = ""]
         #description
         #arg_summaries_header
