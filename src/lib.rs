@@ -55,19 +55,20 @@ pub fn protocol<P: AsRef<Path>>(path: P) -> Result<TokenStream> {
 pub fn interface(interface: Interface) -> TokenStream {
     let trait_ident = Ident::new_raw(&interface.name.to_pascal_case(), Span::call_site());
     let mod_ident = Ident::new_raw(&interface.name.to_snake_case(), Span::call_site());
-    let name = interface.name;
+    let name = &interface.name;
     let version = interface.version;
     let version_doc = format!("`Version {}`", interface.version);
-    let summary = interface.summary.map(|summary| quote!{#[doc = #summary]});
-    let description = interface.description.map(|description| quote! {#[doc = #description]});
+    let summary = interface.summary.as_ref().map(|summary| quote!{#[doc = #summary]});
+    let description = interface.description.as_ref().map(|description| quote! {#[doc = #description]});
 
-    let enums = interface.enums.into_iter().map(|e| enumeration(e));
+    let enums = interface.enums.iter().map(|e| enumeration(e));
     let requests = interface.requests.iter().map(|r| request(r));
-    let events = interface.events.iter().enumerate().map(|(opcode, e)| event(e, opcode.try_into().unwrap()));
+    let events = interface.events.iter().enumerate().map(|(opcode, e)| event(&interface, e, opcode.try_into().unwrap()));
 
     let dispatch_requests = interface.requests.iter().enumerate().map(|(opcode, r)| {
         let opcode: u16 = opcode.try_into().unwrap();
-        let ident = Ident::new_raw(&r.name.to_snake_case(), Span::call_site());
+        let request_name = &r.name.to_snake_case();
+        let ident = Ident::new_raw(request_name, Span::call_site());
         let stream = Ident::new("_stream", Span::call_site());
 
         let define_args = r.args.iter().map(|a| {
@@ -79,10 +80,25 @@ pub fn interface(interface: Interface) -> TokenStream {
             let ident = Ident::new_raw(&a.name.to_snake_case(), Span::call_site());
             quote!{#ident}
         });
+        let args_debug_idents = r.args.iter().map(|a| {
+            let ident = Ident::new_raw(&a.name.to_snake_case(), Span::call_site());
+            quote!{#ident}
+        });
+        let args_debug_templates = r.args.iter().enumerate().map(|(i, _)| {
+            if i == 0 {
+                quote!{"{:?}"}
+            } else {
+                quote!{", {:?}"}
+            }
+        });
         quote!{
             #opcode => {
                 let #stream = _client.stream();
                 #(#define_args)*
+                #[cfg(debug_assertions)]
+                {
+                    ::std::println!(::std::concat!(#name, "@{}.", #request_name, "(", #(#args_debug_templates,)* ")"), _this.id(), #(#args_debug_idents,)*);
+                }
                 Self::#ident(_this, _event_loop, _client #(, #args)*)
             }
         }
@@ -126,7 +142,7 @@ pub fn interface(interface: Interface) -> TokenStream {
     }
 }
 
-pub fn enumeration(enumeration: Enum) -> TokenStream {
+pub fn enumeration(enumeration: &Enum) -> TokenStream {
     let ident = Ident::new_raw(&enumeration.name.to_pascal_case(), Span::call_site());
     let since = enumeration.since.map(|since| {
         let since = format!("`Since version {}`", since);
@@ -135,8 +151,8 @@ pub fn enumeration(enumeration: Enum) -> TokenStream {
             #[doc = #since]
         }
     });
-    let summary = enumeration.summary.map(|summary| quote!{#[doc = #summary]});
-    let description = enumeration.description.map(|description| quote! {#[doc = #description]});
+    let summary = enumeration.summary.as_ref().map(|summary| quote!{#[doc = #summary]});
+    let description = enumeration.description.as_ref().map(|description| quote! {#[doc = #description]});
 
     let entries = enumeration.entries.iter().map(|entry| {
         let name = if entry.name.starts_with(char::is_numeric) {
@@ -245,8 +261,10 @@ pub fn request(request: &Request) -> TokenStream {
     }
 }
 
-pub fn event(event: &Event, opcode: u16) -> TokenStream {
-    let ident = Ident::new_raw(&event.name.to_snake_case(), Span::call_site());
+pub fn event(interface: &Interface, event: &Event, opcode: u16) -> TokenStream {
+    let name = &interface.name;
+    let event_name = &event.name.to_snake_case();
+    let ident = Ident::new_raw(event_name, Span::call_site());
     let stream = Ident::new("_stream", Span::call_site());
     let since = event.since.map(|since| {
         let since = format!("`Since version {}`", since);
@@ -281,6 +299,18 @@ pub fn event(event: &Event, opcode: u16) -> TokenStream {
         })
     };
 
+    let args_debug_idents = event.args.iter().map(|a| {
+        let ident = Ident::new_raw(&a.name.to_snake_case(), Span::call_site());
+        quote!{#ident}
+    });
+    let args_debug_templates = event.args.iter().enumerate().map(|(i, _)| {
+        if i == 0 {
+            quote!{"{:?}"}
+        } else {
+            quote!{", {:?}"}
+        }
+    });
+
     quote!{
         #summary
         #since
@@ -288,9 +318,13 @@ pub fn event(event: &Event, opcode: u16) -> TokenStream {
         #description
         #arg_summaries_header
         #(#arg_summaries)*
-        fn #ident(this: &mut ::yutani::lease::Lease<Self>, client: &mut ::yutani::server::Client<T> #(, #args)*) -> ::core::result::Result<(), ::yutani::wire::WlError<'static>> {
-            let #stream = client.stream();
-            let _key = #stream.start_message(this.id(), #opcode);
+        fn #ident(_this: &mut ::yutani::lease::Lease<Self>, _client: &mut ::yutani::server::Client<T> #(, #args)*) -> ::core::result::Result<(), ::yutani::wire::WlError<'static>> {
+            #[cfg(debug_assertions)]
+            {
+                ::std::println!(::std::concat!(" -> ", #name, "@{}.", #event_name, "(", #(#args_debug_templates,)* ")"), _this.id(), #(#args_debug_idents,)*);
+            }
+            let #stream = _client.stream();
+            let _key = #stream.start_message(_this.id(), #opcode);
             #(#args_senders;)*
             #stream.commit(_key)
         }
